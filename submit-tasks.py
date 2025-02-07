@@ -1,6 +1,6 @@
 import time
 import numpy as np
-from dask.distributed import Client
+from dask.distributed import Client, wait
 
 NR_TASKS=1000
 DELAY=20
@@ -29,11 +29,21 @@ def heavy_hello_world(n):
 
 client = Client("tcp://127.0.0.1:8786")
 
+futures = []
+
 for j in range(1,NR_TASKS):
     # Submit and get a Future object
     future = client.submit(heavy_hello_world, j)
+    futures.append(future)
 
     # Print the future key for tracking
     print(f"Task {j} submitted with key: {future.key}")
 
+print("Waiting for completion...")
+
+# we need to wait here or all but the first X tasks are lost
+# X is the number of workers
+wait(futures)
+
+print()
 print(f"Check the output at {OUTPUT_DIR}/heavy_hello_world_*")
