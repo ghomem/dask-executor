@@ -1,0 +1,36 @@
+#!/bin/bash
+
+# normalized exist codes
+E_OK=0
+E_ERR=1
+
+# dimensioning parameters
+NUM_WORKERS=4
+MEMORY_LIMIT="2GB"
+
+# log file
+LOG_FILE=/tmp/dask-executor.log
+
+# delay after launching scheduler and workers
+WAIT_TIME_SCHEDULER=2
+WAIT_TIME_WORKER=1
+
+# delay after sending signals with pkill
+WAIT_FOR_PROCESS=2
+
+function check_executor_up() {
+
+  # don't grep grep and don't grep the running control script
+  # also don't grep vim as I may be using it for dev
+  procs_found=`ps -ef | grep 'dask-' | grep -v grep | grep -v dask-executor | grep -v vim | awk '{ print $2 }'`
+
+  if [ ! -z "$procs_found" ]; then
+    return $E_OK
+  else
+    if [ ! -z $2 ] && [ $2 == "verbose" ]; then
+      echo Error: dask processes found: $procs_found
+    fi
+    return $E_ERR
+  fi
+
+}
