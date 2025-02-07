@@ -1,27 +1,26 @@
 WARNING: experimental code
 
 Install dask
-```
+`
 sudo apt install python3-dask
-```
+`
 
 Start services
-```
+`
 ./dask-executor-start.sh
-```
+`
 
 Stop services
-
-```
+`
 dask-executor-stop.sh
-```
+`
 
 Submit tasks
-```
+`
 python3 submit-tasks.py
-```
+`
 
 Check tasks
-```
+`
 check-tasks.py
-```
+`
