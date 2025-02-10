@@ -7,21 +7,26 @@ sudo apt install python3-dask
 
 Start services
 ```
-./dask-executor-start.sh
+./control-scripts/dask-executor-start.sh
 ```
 
 Stop services
 
 ```
-dask-executor-stop.sh
+./control-scripts/dask-executor-stop.sh
+```
+
+Check services
+```
+./control-scripts/dask-executor-status.sh
 ```
 
 Submit tasks
 ```
-python3 submit-tasks.py
+python3 tests/local/submit-tasks.py
 ```
 
 Check tasks
 ```
-check-tasks.py
+./control-scripts/check-tasks.py
 ```
