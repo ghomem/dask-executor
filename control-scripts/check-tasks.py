@@ -1,3 +1,5 @@
+import json
+import argparse
 from dask.distributed import Client
 from collections import Counter
 
@@ -15,32 +17,43 @@ def get_worker_tasks(dask_worker):
     return [ len(dask_worker.state.tasks), len(dask_worker.state.executing), len(dask_worker.state.has_what) ]
 
 
+parser = argparse.ArgumentParser()
+
+parser.add_argument("--verbose", help="Provide verbose output", default=False, action='store_true' )
+
+args = parser.parse_args()
+
 # Connect to the local Dask scheduler
 dask_client = Client("tcp://127.0.0.1:8786")
 
 dask_scheduler = dask_client.scheduler
 
 # runs on the scheduler process
-task_states = dask_client.run_on_scheduler(get_task_state_counts)
-print(f"Task states in the scheduler: {task_states}")
+task_states = json.dumps(dask_client.run_on_scheduler(get_task_state_counts))
 
-# runs on every worker, returns a dictionary
-worker_tasks = dask_client.run(get_worker_tasks)
+if args.verbose:
+    scheduler_str = f"Task states in the scheduler: {task_states}"
+else:
+    scheduler_str = str(task_states)
 
-# this is a debug message that I am using the check various fields from the worker
-# print("\ndebug:", worker_tasks, "\n")
+print(scheduler_str)
 
-# Fetch task details from the scheduler
-scheduler_state = dask_client.scheduler_info()
-workers = scheduler_state["workers"]
+if args.verbose:
 
-print("Worker task states:")
-for worker in workers:
-    worker_id = worker
+    # runs on every worker, returns a dictionary
+    worker_tasks = dask_client.run(get_worker_tasks)
 
-    worker_tasks_total = worker_tasks[worker][0]
-    worker_tasks_executing = worker_tasks[worker][1]
+    # Fetch task details from the scheduler
+    scheduler_state = dask_client.scheduler_info()
+    workers = scheduler_state["workers"]
 
-    print("  *", worker_id, "tasks:", worker_tasks_total, "executing tasks:", worker_tasks_executing)
+    print("Worker task states:")
+    for worker in workers:
+        worker_id = worker
 
-print()
+        worker_tasks_total = worker_tasks[worker][0]
+        worker_tasks_executing = worker_tasks[worker][1]
+
+        print("  *", worker_id, "tasks:", worker_tasks_total, "executing tasks:", worker_tasks_executing)
+
+    print()
