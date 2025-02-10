@@ -23,10 +23,10 @@ Check services
 
 Submit tasks
 ```
-python3 tests/local/submit-tasks.py
+python3 tests/local/test-submit-tasks.py
 ```
 
 Check tasks
 ```
-./control-scripts/check-tasks.py
+./control-scripts/dask-executor-check-tasks.py
 ```
