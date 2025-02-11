@@ -54,7 +54,7 @@ Download the task result via API
 curl localhost:5000/get_stats?key=calc_stats-2e9cd200-f24d-43da-bb8b-b14d3dcb314e
 ```
 
-Test submit, check, download cycle via API (10 tasks in the example)
+Test submit / check / download process via API (10 tasks in the example)
 ```
 python3 tests/api/test-submit-tasks.py -H localhost:5000 -ns -np 10
 ```
