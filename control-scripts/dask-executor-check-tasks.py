@@ -57,3 +57,5 @@ if args.verbose:
         print("  *", worker_id, "tasks:", worker_tasks_total, "executing tasks:", worker_tasks_executing)
 
     print()
+
+dask_client.close()

@@ -4,7 +4,7 @@ WARNING: experimental code
 
 This is an experiment with Dask as an assynchronous background executor for a web API.
 
-In this example we use Flask to implement an API, that calculates the mean and stdev of a list of 5M randomly generated numbers between 0 and 1000.
+In this example we use Flask to implement an API that calculates the mean and stdev of a list of 5M randomly generated numbers between 0 and 1000.
 
 # Operation
 
@@ -29,9 +29,9 @@ Check services
 ./control-scripts/dask-executor-status.sh
 ```
 
-Test task submission via cli
+Test multiple task submission via cli (10 tasks)
 ```
-python3 tests/local/test-submit-tasks.py
+python3 tests/local/test-submit-tasks.py 10
 ```
 
 Check tasks
@@ -39,7 +39,7 @@ Check tasks
 ./control-scripts/dask-executor-check-tasks.py
 ```
 
-Request a task via API and get the task ID
+Submit a task via API and get the task ID
 ```
 curl localhost:5000/request_stats
 ```
@@ -52,4 +52,9 @@ curl localhost:5000/check_stats?key=calc_stats-2e9cd200-f24d-43da-bb8b-b14d3dcb3
 Download the task result via API
 ```
 curl localhost:5000/get_stats?key=calc_stats-2e9cd200-f24d-43da-bb8b-b14d3dcb314e
+```
+
+Test submit, check, download cycle via API using concurrent processes
+```
+python3 tests/api/test-submit-tasks.py -H localhost:5000 -ns -np 10
 ```
