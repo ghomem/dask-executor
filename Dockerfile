@@ -26,5 +26,5 @@ RUN chmod +x /app/control-scripts/*
 EXPOSE 8080
 
 # Set entrypoint
-ENTRYPOINT ["/app/entrypoint.sh"]
+ENTRYPOINT ["/app/control-scripts/entrypoint.sh"]
 
