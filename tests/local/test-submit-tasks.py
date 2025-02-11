@@ -7,6 +7,36 @@ DELAY = 20
 OUTPUT_DIR = "/tmp"
 
 
+# performs some important statistics calculations
+def calc_stats():
+    from distributed.worker import thread_state
+    key = thread_state.key
+
+    numbers = []
+    for i in range(1, 5000000):
+        x = np.random.randint(0, 1000)
+        numbers.append(x)
+
+    results = {}
+
+    results["mean"]  = np.mean(numbers)
+    results["stdev"] = np.std(numbers)
+
+    # for the sake of this demo we use OUTPUT_DIR as a database to store the results :)
+    # it will be valled calc_stats_XXXXXXXXXX
+    output_file = f"{OUTPUT_DIR}/{key}"
+
+    try:
+        f = open(output_file, 'w')
+        f.write(json.dumps(results))
+        f.close()
+    except Exception as e:
+        return f"could not open output file {output_file}"
+
+    # returns a dictionary (just for testing purposes as the output is in the "database")
+    return results
+
+
 # dummy execution function
 # takes about 15s in the test env
 def heavy_hello_world(n):
@@ -36,8 +66,8 @@ futures = []
 
 for j in range(1, NR_TASKS + 1):
 
-    # submit and get a Future object
-    future = client.submit(heavy_hello_world, j)
+    # submit and get a Future object, pure=False ensures key uniqueness
+    future = client.submit(calc_stats, pure=False)
 
     # print the future key for tracking
     print(f"Task {j} submitted with key: {future.key}")
@@ -46,4 +76,4 @@ for j in range(1, NR_TASKS + 1):
     fire_and_forget(future)
 
 print()
-print(f"Check the output at {OUTPUT_DIR}/heavy_hello_world_*")
+print(f"Check the output at {OUTPUT_DIR}/calc_stats_*")
