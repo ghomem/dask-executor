@@ -24,7 +24,7 @@ dask-worker tcp://127.0.0.1:8786 --memory-limit $MEMORY_LIMIT --nworkers $NUM_WO
 echo "Dask workers started..."
 
 # FIXME use gunicorn
-python3 ./api/stats_api.py 2>1 &>> $LOG_FILE &
+python3 ./api/stats_api.py &>> $LOG_FILE &
 echo "API started..."
 
 echo "All done."
