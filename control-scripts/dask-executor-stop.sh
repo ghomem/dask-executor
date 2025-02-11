@@ -13,15 +13,9 @@ else
   echo "Stopping dask executor services..."
 fi
 
-pkill dask-scheduler &>/dev/null
-sleep $WAIT_FOR_PROCESS
-pkill -9 dask-scheduler &>/dev/null
-sleep $WAIT_FOR_PROCESS
-
-pkill dask-worker &>/dev/null
-sleep $WAIT_FOR_PROCESS
-pkill -9 dask-worker &>/dev/null
-sleep $WAIT_FOR_PROCESS
+kill_service dask-scheduler
+kill_service dask-worker
+kill_service "python3 ./api/stats_api.py" XXX
 
 check_executor_up "verbose"
 rc=$?

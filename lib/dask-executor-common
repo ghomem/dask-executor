@@ -18,6 +18,21 @@ WAIT_TIME_WORKER=1
 # delay after sending signals with pkill
 WAIT_FOR_PROCESS=2
 
+function kill_service() {
+
+  # could be the process name or a longer string with command line arguments
+  proc_pattern="$1"
+
+  if [ ! -z $2 ]; then
+    extra_opts="-f"
+  fi
+
+  pkill $extra_opts "$proc_pattern" &>/dev/null
+  sleep $WAIT_FOR_PROCESS
+  pkill $extra_opts -9 "$proc_pattern" &>/dev/null
+
+}
+
 function check_executor_up() {
 
   # don't grep grep and don't grep the running control script

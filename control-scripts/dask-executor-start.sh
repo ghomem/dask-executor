@@ -23,5 +23,9 @@ sleep $WAIT_TIME_SCHEDULER
 dask-worker tcp://127.0.0.1:8786 --memory-limit $MEMORY_LIMIT --nworkers $NUM_WORKERS --nthreads 1 &>> $LOG_FILE &
 echo "Dask workers started..."
 
+# FIXME use gunicorn
+python3 ./api/stats_api.py &>/dev/null &
+echo "API started..."
+
 echo "All done."
 
