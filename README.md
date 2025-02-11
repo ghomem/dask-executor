@@ -70,5 +70,5 @@ sudo docker tag IMAGEDID dask-executor:latest
 
 Launch the image
 ```
-
+sudo docker run -d -p 8080:5000 dask-executor /bin/bash
 ```
