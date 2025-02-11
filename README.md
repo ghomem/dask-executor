@@ -63,12 +63,10 @@ python3 tests/api/test-submit-tasks.py -H localhost:5000 -ns -np 10
 
 Build the image locally
 ```
-sudo docker build .
-sudo docker tag IMAGEDID dask-executor:latest
-
+sudo docker build -t dask-executor:latest .
 ```
 
-Launch the image
+Launch a container from the local image
 ```
 sudo docker run -d -p 8080:5000 dask-executor /bin/bash
 ```
