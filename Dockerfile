@@ -15,7 +15,7 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 
 # Copy scripts into the container
-COPY control-scripts/ /app/scripts/
+COPY control-scripts/ /app/control-scripts/
 COPY lib /app/lib
 COPY api /app/api
 

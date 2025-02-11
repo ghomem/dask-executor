@@ -58,3 +58,17 @@ Test submit, check, download cycle via API using concurrent processes
 ```
 python3 tests/api/test-submit-tasks.py -H localhost:5000 -ns -np 10
 ```
+
+# Docker notes
+
+Build the image locally
+```
+sudo docker build .
+sudo docker tag IMAGEDID dask-executor:latest
+
+```
+
+Launch the image
+```
+
+```
