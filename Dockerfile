@@ -22,6 +22,9 @@ COPY api /app/api
 # Ensure scripts are executable
 RUN chmod +x /app/control-scripts/*
 
+# Expose port 8080
+EXPOSE 8080
+
 # Set entrypoint
 ENTRYPOINT ["/app/entrypoint.sh"]
 
