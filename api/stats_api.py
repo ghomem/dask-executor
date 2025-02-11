@@ -40,6 +40,29 @@ def calc_stats():
     return results
 
 
+# simply allocates memory
+def allocate_memory(factor):
+    from distributed.worker import thread_state
+    key = thread_state.key
+
+    size_in_bytes = factor * 1024**3
+    num_elements = int(size_in_bytes / np.float64().nbytes)  # Number of float64 elements
+
+    array = np.full(num_elements, 1.0, dtype=np.float64)
+
+    output_file = f"{OUTPUT_DIR}/{key}"
+
+    # if we are here... we did not crash
+    try:
+        f = open(output_file, 'w')
+        f.write(f"factor {factor}")
+        f.close()
+    except Exception as e:
+        return f"could not open output file {output_file}"
+
+    return "OK"
+
+
 def get_task_status(dask_scheduler, key):
     for task in dask_scheduler.tasks.values():
         if task.key == key:
@@ -119,6 +142,35 @@ def get_stats():
         f.close()
     except Exception as e:
         results = {}
+
+    return json.dumps(results)
+
+
+# submits a request that will allocate 1.5G of memory
+@app.route('/request_memory')
+def request_memory():
+
+    try:
+        factor = int(request.args.get('factor'))
+    except Exception as e:
+        factor = 1
+
+    dask_client = Client("tcp://127.0.0.1:8786")
+
+    # submit and get a Future object, pure=False ensures key uniqueness
+    future = dask_client.submit(allocate_memory, factor, pure=False)
+
+    # save the future key for tracking
+    key = future.key
+
+    # decouple the submitted task from this script
+    fire_and_forget(future)
+
+    results = {}
+
+    results["key"] = key
+
+    dask_client.close()
 
     return json.dumps(results)
 

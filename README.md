@@ -6,6 +6,16 @@ This is an experiment with Dask as an assynchronous background executor for a we
 
 In this example we use Flask to implement an API that calculates the mean and stdev of a list of 5M randomly generated numbers between 0 and 1000.
 
+These are the available endpoints:
+
+* request_stats - requests the execution of a calculation task
+* check_stats - checks the status of a task
+* get_stats - downloads the execution results, if they are available
+
+We also implemented an endpoint that demos the dask memory control:
+
+* request_memory
+
 # Operation
 
 Install dask
@@ -57,6 +67,21 @@ curl localhost:5000/get_stats?key=calc_stats-2e9cd200-f24d-43da-bb8b-b14d3dcb314
 Test submit / check / download process via API (10 tasks in the example)
 ```
 python3 tests/api/test-submit-tasks.py -H localhost:5000 -ns -np 10
+```
+
+Allocate 1G of memory in a task (this will work):
+```
+curl http://localhost:5000/request_memory?factor=1
+```
+
+Allocate 2G of memory in a task (this will fail since the limit is 2G):
+```
+curl http://localhost:5000/request_memory?factor=2
+```
+
+Check whether a memory allocation task resulted in state "finished" or "not found":
+```
+curl localhost:5000/check_stats?key=allocate_memory-7768a58e-6958-4d61-a5eb-dc3e9e4d7a09
 ```
 
 # Docker notes
