@@ -85,7 +85,7 @@ def submit_and_wait(host, max_retries, delay, no_ssl):
         if status in ["processing", "queued"]:
             time.sleep(delay)
             loops += 1
-        elif status == "not found":
+        elif status == "finished":
             is_task_not_finished = False
         else:
             # this is a catch-all case so that we become aware rather than ignoring unexpected responses

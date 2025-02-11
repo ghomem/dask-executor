@@ -1,4 +1,5 @@
 import json
+import os
 import numpy as np
 from dask.distributed import Client, wait, fire_and_forget
 from flask import Flask, request
@@ -75,15 +76,27 @@ def request_stats():
 @app.route('/check_stats')
 def check_stats():
 
+    results = {}
+
     key = request.args.get('key')
+
+    # let's check if the task is finished
+    # by checking the "database" where the result is stored
+    # (in this case the filesystem at OUTPUT_DIR)
+    try:
+        filename = f"{OUTPUT_DIR}/{key}"
+        statinfo = os.stat(filename)
+        results["status"] = "finished"
+        return json.dumps(results)
+
+    except Exception as e:
+        pass
 
     dask_client = Client("tcp://127.0.0.1:8786")
 
     dask_scheduler = dask_client.scheduler
 
     task_status = dask_client.run_on_scheduler(get_task_status, key=key)
-
-    results = {}
 
     results["status"] = task_status
 
