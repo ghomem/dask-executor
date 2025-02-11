@@ -51,10 +51,10 @@ def get_task_status(dask_scheduler, key):
 @app.route('/request_stats')
 def request_stats():
 
-    client = Client("tcp://127.0.0.1:8786")
+    dask_client = Client("tcp://127.0.0.1:8786")
 
     # submit and get a Future object, pure=False ensures key uniqueness
-    future = client.submit(calc_stats, pure=False)
+    future = dask_client.submit(calc_stats, pure=False)
 
     # save the future key for tracking
     key = future.key
@@ -65,6 +65,8 @@ def request_stats():
     results = {}
 
     results["key"] = key
+
+    dask_client.close()
 
     return json.dumps(results)
 
@@ -84,6 +86,8 @@ def check_stats():
     results = {}
 
     results["status"] = task_status
+
+    dask_client.close()
 
     return json.dumps(results)
 

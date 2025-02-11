@@ -1,8 +1,8 @@
 import time
+import argparse
 import numpy as np
 from dask.distributed import Client, wait, fire_and_forget
 
-NR_TASKS = 20
 DELAY = 20
 OUTPUT_DIR = "/tmp"
 
@@ -60,14 +60,22 @@ def heavy_hello_world(n):
 
 
 # main script
-client = Client("tcp://127.0.0.1:8786")
+
+
+parser = argparse.ArgumentParser(description='Test local task submission')
+
+parser.add_argument("n", help='Number of tasks to submit', type=int, nargs='?', default=5)
+
+args = parser.parse_args()
+
+dask_client = Client("tcp://127.0.0.1:8786")
 
 futures = []
 
-for j in range(1, NR_TASKS + 1):
+for j in range(1, args.n + 1):
 
     # submit and get a Future object, pure=False ensures key uniqueness
-    future = client.submit(calc_stats, pure=False)
+    future = dask_client.submit(calc_stats, pure=False)
 
     # print the future key for tracking
     print(f"Task {j} submitted with key: {future.key}")
@@ -75,5 +83,11 @@ for j in range(1, NR_TASKS + 1):
     # decouple the submitted task from this script
     fire_and_forget(future)
 
+dask_client.close()
+
 print()
-print(f"Check the output at {OUTPUT_DIR}/calc_stats_*")
+print(f"Check the output at: {OUTPUT_DIR}/calc_stats_*")
+print()
+print("Check the task status with:")
+print("python3 control-scripts/dask-executor-check-tasks.py")
+print()
