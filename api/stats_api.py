@@ -146,7 +146,7 @@ def get_stats():
     return json.dumps(results)
 
 
-# submits a request that will allocate 1.5G of memory
+# submits a request that will allocate factor * 1GB of memory
 @app.route('/request_memory')
 def request_memory():
 
