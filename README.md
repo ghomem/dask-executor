@@ -10,7 +10,9 @@ These are the available endpoints:
 
 * request_stats - requests the execution of a calculation task
 * check_stats - checks the status of a task
-* get_stats - downloads the execution results, if they are available
+* get_stats - returns the execution results, if they are available
+* check_ping - executes a unitary task and returns the latency in miliseconds
+* check load - returns the counts of dask tasks for each state (processing, queued, etc)
 
 We also implemented an endpoint that demos the dask memory control:
 
