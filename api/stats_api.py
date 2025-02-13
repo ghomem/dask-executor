@@ -1,11 +1,20 @@
-import json
 import os
+import sys
+import json
 import numpy as np
+from datetime import datetime, timedelta
+from collections import Counter
 from dask.distributed import Client, wait, fire_and_forget
 from flask import Flask, request
-import sys
 
 OUTPUT_DIR = "/tmp"
+DASK_MANAGER_URL = "tcp://127.0.0.1:8786"
+
+# this controls how long we wait until we consider the system is busy
+# it usually returns in aprox 30ms, so a timeout in the order of seconds
+# means that all workers are busy processing things or that something is broken
+# note: being busy is OK
+PING_TIMEOUT = 2
 
 app = Flask(__name__)
 
@@ -63,6 +72,7 @@ def allocate_memory(factor):
     return "OK"
 
 
+# gets the status of a particular task using its unique key
 def get_task_status(dask_scheduler, key):
     for task in dask_scheduler.tasks.values():
         if task.key == key:
@@ -71,11 +81,36 @@ def get_task_status(dask_scheduler, key):
     return "not found"
 
 
+# gets the overall counts of task states as stored in the dask scheduler
+def get_task_state_counts(dask_scheduler):
+
+    task_states = dict(Counter(task.state for task in dask_scheduler.tasks.values()))
+    total_tasks = sum(task_states.values())
+
+    # simplify the client logic by adding the total tasks
+    task_states["total"] = total_tasks
+
+    # simplify further the client logic ensuring that counts for some states are always present
+    if "processing" not in task_states:
+        task_states["processing"] = 0
+
+    if "queued" not in task_states:
+        task_states["queued"] = 0
+
+    # for better user output let's ensure the dictionary is sorted
+    return dict(sorted(task_states.items()))
+
+
+def dask_executor_ping():
+
+    return "pong"
+
+
 # submits a calculation request
 @app.route('/request_stats')
 def request_stats():
 
-    dask_client = Client("tcp://127.0.0.1:8786")
+    dask_client = Client(DASK_MANAGER_URL)
 
     # submit and get a Future object, pure=False ensures key uniqueness
     future = dask_client.submit(calc_stats, pure=False)
@@ -115,7 +150,7 @@ def check_stats():
     except Exception as e:
         pass
 
-    dask_client = Client("tcp://127.0.0.1:8786")
+    dask_client = Client(DASK_MANAGER_URL)
 
     dask_scheduler = dask_client.scheduler
 
@@ -155,7 +190,7 @@ def request_memory():
     except Exception as e:
         factor = 1
 
-    dask_client = Client("tcp://127.0.0.1:8786")
+    dask_client = Client(DASK_MANAGER_URL)
 
     # submit and get a Future object, pure=False ensures key uniqueness
     future = dask_client.submit(allocate_memory, factor, pure=False)
@@ -171,6 +206,62 @@ def request_memory():
     results["key"] = key
 
     dask_client.close()
+
+    return json.dumps(results)
+
+
+# helper "ping" route to check the API responsiveness
+@app.route('/check_ping')
+def check_ping():
+
+    initial_time = datetime.now()
+
+    dask_client = Client(DASK_MANAGER_URL)
+
+    # submit and get a Future object, pure=False ensures key uniqueness
+    future = dask_client.submit(dask_executor_ping, pure=False)
+
+    # save the future key for tracking
+    key = future.key
+
+    # wait for the execution, as this is supposed to be quick
+    timeout = False
+    try:
+        wait([future], timeout=PING_TIMEOUT)
+    except Exception as e:
+        timeout = True
+        pass
+
+    results = {}
+
+    if timeout:
+        status = "busy"
+    else:
+        status = "free"
+
+    final_time = datetime.now()
+
+    delta   = final_time - initial_time
+
+    # calculate the latency in miliseconds, as in the usual ping command
+    latency = int(delta.seconds * 1000 + delta.microseconds / 1000)
+
+    results["status"]  = status
+    results["latency"] = latency
+
+    dask_client.close()
+
+    return json.dumps(results)
+
+
+# check the status of the execution queue
+@app.route('/check_load')
+def check_load():
+
+    dask_client = Client(DASK_MANAGER_URL)
+
+    # runs on the scheduler process
+    results = dask_client.run_on_scheduler(get_task_state_counts)
 
     return json.dumps(results)
 
