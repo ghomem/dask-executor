@@ -91,11 +91,11 @@ def get_task_state_counts(dask_scheduler):
     task_states["total"] = total_tasks
 
     # simplify further the client logic ensuring that counts for some states are always present
-    if "processing" not in task_states:
-        task_states["processing"] = 0
+    mandatory_states = [ "processing", "queued", "memory" ]
 
-    if "queued" not in task_states:
-        task_states["queued"] = 0
+    for state in mandatory_states:
+        if state not in task_states:
+            task_states[state] = 0
 
     # for better user output let's ensure the dictionary is sorted
     return dict(sorted(task_states.items()))
@@ -239,6 +239,8 @@ def check_ping():
     else:
         status = "free"
 
+    dask_client.close()
+
     final_time = datetime.now()
 
     delta   = final_time - initial_time
@@ -262,6 +264,8 @@ def check_load():
 
     # runs on the scheduler process
     results = dask_client.run_on_scheduler(get_task_state_counts)
+
+    dask_client.close()
 
     return json.dumps(results)
 
