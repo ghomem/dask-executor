@@ -81,6 +81,11 @@ def get_task_status(dask_scheduler, key):
     return "not found"
 
 
+# get state counts for tasks inside a specific worker
+def get_worker_tasks(dask_worker):
+    return [ len(dask_worker.state.tasks), len(dask_worker.state.executing), len(dask_worker.state.has_what) ]
+
+
 # gets the overall counts of task states as stored in the dask scheduler
 def get_task_state_counts(dask_scheduler):
 
@@ -264,6 +269,32 @@ def check_load():
 
     # runs on the scheduler process
     results = dask_client.run_on_scheduler(get_task_state_counts)
+
+    # correct counting due to dask putting an extra task inside each worker
+    # rather than keeping it queued in the manager - see the comment inside dask-executor-start.sh
+
+    # runs on every worker, returns a dictionary
+    worker_tasks = dask_client.run(get_worker_tasks)
+
+    # Fetch task details from the scheduler
+    scheduler_state = dask_client.scheduler_info()
+    workers = scheduler_state["workers"]
+
+    tasks_queued_inside_workers = 0
+
+    # get low level information from the workers
+    for worker in workers:
+        worker_id = worker
+
+        worker_tasks_total     = worker_tasks[worker][0]
+        worker_tasks_executing = worker_tasks[worker][1]
+        worker_tasks_queued    = worker_tasks_total - worker_tasks_executing
+
+        tasks_queued_inside_workers += worker_tasks_queued
+
+    # correct the numbers
+    results["processing"] -= tasks_queued_inside_workers
+    results["queued"]     += tasks_queued_inside_workers
 
     dask_client.close()
 
