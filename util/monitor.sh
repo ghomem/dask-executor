@@ -13,7 +13,7 @@ while true; do
   result=$(curl -s $URL)
   clear
   echo "Processing           | Queued"
-  echo "---------------------+--------------------------------------------"
+  echo "---------------------+---------------------------------------------------------------------------------------------------"
   echo $result | jq -r '
     def bar(n): (reduce range(0; n) as $i ([]; . + ["#"]) + (reduce range(n; 20) as $i ([]; . + [" "])) | join(""));
     [bar(.processing), bar(.queued)] | join(" | ")
