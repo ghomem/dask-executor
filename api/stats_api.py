@@ -4,7 +4,7 @@ import json
 import numpy as np
 from datetime import datetime, timedelta
 from collections import Counter
-from dask.distributed import Client, wait, fire_and_forget
+from dask.distributed import Client, LocalCluster, wait, fire_and_forget
 from flask import Flask, request
 
 OUTPUT_DIR = "/tmp"
@@ -270,5 +270,9 @@ def check_load():
     return json.dumps(results)
 
 
-if __name__ == '__main__':
-    app.run(debug=False, host='0.0.0.0')
+# read environment variables
+num_workers = int(os.environ['NUM_WORKERS'])
+memory_limit = os.environ['MEMORY_LIMIT']
+
+# Start a Dask cluster with a scheduler and workers
+cluster = LocalCluster(scheduler_port=8786, host="127.0.0.1", n_workers=num_workers, memory_limit=memory_limit, threads_per_worker=1)

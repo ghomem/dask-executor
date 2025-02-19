@@ -12,31 +12,24 @@ if [ $rc -eq 0 ]; then
 fi
 
 if [ ! -z $ENV_NUM_WORKERS ]; then
-  num_workers=$ENV_NUM_WORKERS
+  NUM_WORKERS=$ENV_NUM_WORKERS
 else
-  num_workers=$NUM_WORKERS
+  NUM_WORKERS=$NUM_WORKERS
 fi
 
 if [ ! -z $ENV_MEMORY_LIMIT ]; then
-  memory_limit=$ENV_MEMORY_LIMIT
+  MEMORY_LIMIT=$ENV_MEMORY_LIMIT
 else
-  memory_limit=$MEMORY_LIMIT
+  MEMORY_LIMIT=$MEMORY_LIMIT
 fi
 
-echo "Starting dask executor with $num_workers workers and $memory_limit memory limit."
+# whether they are defaults or values from the outside
+# these variables are always exported
+export NUM_WORKERS
+export MEMORY_LIMIT
 
-# Start the Dask scheduler explicitly on 127.0.0.1
-dask-scheduler --host 127.0.0.1 --port 8786 &>> $LOG_FILE &
-echo "Dask scheduler started..."
-
-# Give the scheduler some time to start
-sleep $WAIT_TIME_SCHEDULER
-
-dask-worker tcp://127.0.0.1:8786 --memory-limit $memory_limit --nworkers $num_workers --nthreads 1 &>> $LOG_FILE &
-echo "Dask workers started..."
-
-# FIXME use gunicorn
-python3 ./api/stats_api.py &>> $LOG_FILE &
+cd api
+./start.sh &>> $LOG_FILE &
 echo "API started..."
 
 echo "All done."

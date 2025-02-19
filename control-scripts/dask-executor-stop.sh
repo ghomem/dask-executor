@@ -13,9 +13,7 @@ else
   echo "Stopping dask executor services..."
 fi
 
-kill_service dask-scheduler
-kill_service dask-worker
-kill_service "python3 ./api/stats_api.py" XXX
+kill_service "python3" XXX
 
 check_executor_up "verbose"
 rc=$?

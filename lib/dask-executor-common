@@ -4,7 +4,7 @@
 E_OK=0
 E_ERR=1
 
-# dimensioning parameters
+# default dimensioning parameters
 NUM_WORKERS=3
 MEMORY_LIMIT="2GB"
 
@@ -35,9 +35,8 @@ function kill_service() {
 
 function check_executor_up() {
 
-  # don't grep grep and don't grep the running control script
-  # also don't grep vim as I may be using it for dev
-  procs_found=`ps -ef | grep 'dask-' | grep -v grep | grep -v dask-executor | grep -v vim | awk '{ print $2 }'`
+  # don't grep grep
+  procs_found=`ps -ef | grep python3 | grep -v grep | egrep 'gunicorn|multiprocessing' |  awk '{ print $2 }'`
 
   if [ ! -z "$procs_found" ]; then
     return $E_OK
