@@ -11,6 +11,8 @@ if [ $rc -eq 0 ]; then
   exit 1
 fi
 
+# we respect the externally supplied values,
+# falling back to the default ones if necessary
 if [ ! -z $ENV_NUM_WORKERS ]; then
   NUM_WORKERS=$ENV_NUM_WORKERS
 else
@@ -30,7 +32,7 @@ export MEMORY_LIMIT
 
 cd api
 ./start.sh &>> $LOG_FILE &
-echo "API started..."
+echo "Dask executor started..."
 
 echo "All done."
 
